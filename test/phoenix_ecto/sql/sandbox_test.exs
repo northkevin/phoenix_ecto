@@ -25,6 +25,12 @@ defmodule PhoenixEcto.SQL.SandboxTest do
     call_plug(conn, opts)
   end
 
+  defp call_plug_with_checkout_and_shared_mode(conn, opts \\ []) do
+    opts = Keyword.merge([at: "/sandbox", repo: MyRepo, mode: :shared], opts)
+    |> IO.inspect(label: "call_plug_with_checkout_and_shared_mode - opts")
+    call_plug(conn, opts)
+  end
+
   defp call_plug(conn, opts \\ []) do
     opts =
       opts
@@ -95,6 +101,46 @@ defmodule PhoenixEcto.SQL.SandboxTest do
   test "checks out/in connection through sandbox owner at path" do
     # start new sandbox owner
     conn = call_plug_with_checkout(conn(:post, "/sandbox"))
+    assert "BeamMetadata" <> _ = user_agent = conn.resp_body
+    assert conn.halted
+    assert conn.status == 200
+    assert_receive {:checkout, MyRepo}
+
+    # no allow with missing header
+    conn = call_plug_with_checkout(conn(:get, "/"))
+    refute conn.halted
+    refute_receive {:allowed, MyRepo}
+
+    # allows new request with metadata in header
+    conn =
+      conn(:get, "/")
+      |> put_req_header("user-agent", user_agent)
+      |> call_plug_with_checkout()
+
+    refute conn.halted
+    assert_receive {:allowed, MyRepo}
+
+    # checks in request with metadata
+    conn =
+      conn(:delete, "/sandbox")
+      |> put_req_header("user-agent", user_agent)
+      |> call_plug_with_checkout()
+
+    assert conn.status == 200
+    assert conn.halted
+
+    # old user agent refuses owner who has been checked in
+    _conn =
+      conn(:get, "/")
+      |> put_req_header("user-agent", user_agent)
+      |> call_plug_with_checkout()
+
+    refute_receive {:allowed, MyRepo}
+  end
+
+  test "checks out/in connection through sandbox owner at path in shared mode" do
+    # start new sandbox owner
+    conn = call_plug_with_checkout_and_shared_mode(conn(:post, "/sandbox"))
     assert "BeamMetadata" <> _ = user_agent = conn.resp_body
     assert conn.halted
     assert conn.status == 200

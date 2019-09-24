@@ -3,7 +3,7 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
   use GenServer
 
   @timeout 15_000
-  # @mode :auto
+  @mode :auto
 
   def start_link(repo, client, opts) do
     GenServer.start_link(__MODULE__, [repo, client, opts])
@@ -12,9 +12,21 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
   def init([repo, client, opts]) do
     timeout = opts[:timeout] || @timeout
     sandbox = opts[:sandbox] || Ecto.Adapters.SQL.Sandbox
+    mode = opts[:mode] || @mode
     # mode = opts[:mode] || @mode
 
-    :ok = checkout_connection(sandbox, repo, client)
+    case mode do
+      :shared ->
+        :ok = checkout_connection_shared(sandbox, repo, client)
+        |> IO.inspect(label: "mode: shared")
+      :auto ->
+        :ok = checkout_connection(sandbox, repo, client)
+        |> IO.inspect(label: "mode: auto")
+      :manual ->
+        :ok = checkout_connection(sandbox, repo, client)
+        |> IO.inspect(label: "mode: manual")
+      end
+    # :ok = checkout_connection(sandbox, repo, client)
     Process.send_after(self(), :timeout, timeout)
 
     {:ok, %{repo: repo, client: client, sandbox: sandbox}}
@@ -41,12 +53,27 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
 
   defp checkout_connection(sandbox, repo, client) do
     sandbox.checkout(repo, client: client)
-    |> IO.inspect(label: "sandbox_session.ex - checkout_connection - sandbox.checkout(repo, client: client)")
-    {:shared, client}
-    |> IO.inspect(label: "sandbox_session.ex - checkout_connection - {:shared, client}")
-    sandbox.mode(repo, {:shared, client})
-    |> IO.inspect(label: "sandbox_session.ex - checkout_connection - sandbox.mode(repo, {:shared, client})")
   end
+
+  defp checkout_connection_shared(sandbox, repo, client) do
+    sandbox.checkout(repo, client: client)
+    |> IO.inspect(label: "sandbox_session.ex - checkout_connection_shared - sandbox.checkout(repo, client: client)")
+    sandbox.mode(repo, {:shared, self()})
+    |> IO.inspect(label: "sandbox_session.ex - checkout_connection_shared - sandbox.mode(repo, {:shared, self()})")
+  end
+
+  # defp checkout_connection_shared(sandbox, repo, client) do
+  #   owner_process = Process.whereis(:db_owner_agent)
+  #   if owner_process && Process.alive?(owner_process) do
+  #   else
+  #     {:ok, _pid} = Agent.start_link(&checkout_connection/0, name: :db_owner_agent)
+  #   end
+  #   # |> IO.inspect(label: "sandbox_session.ex - checkout_connection - sandbox.checkout(repo, client: client)")
+  #   # {:shared, client}
+  #   # |> IO.inspect(label: "sandbox_session.ex - checkout_connection - {:shared, client}")
+  #   # sandbox.mode(repo, {:shared, client})
+  #   # |> IO.inspect(label: "sandbox_session.ex - checkout_connection - sandbox.mode(repo, {:shared, client})")
+  # end
 
   # defp set_sandbox_mode(sandbox, repo, mode, client) do
   #   when mode in [:auto, :manual]

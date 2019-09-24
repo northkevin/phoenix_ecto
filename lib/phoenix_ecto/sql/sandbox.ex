@@ -104,6 +104,7 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
   def call(%Conn{method: "POST", path_info: path} = conn, %{path: path} = opts) do
     %{repo: repo, session_opts: session_opts} = opts
     {:ok, _owner, metadata} = start_child(repo, session_opts)
+    |> IO.inspect(label: "sandbox.ex - call - {:ok, _owner, metadata}")
 
     conn
     |> put_resp_content_type("text/plain")
