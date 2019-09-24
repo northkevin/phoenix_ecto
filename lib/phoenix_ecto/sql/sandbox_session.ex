@@ -6,7 +6,8 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
   @mode :auto
 
   def start_link(repo, client, opts) do
-    GenServer.start_link(__MODULE__, [repo, client, opts])
+    GenServer.start_link(__MODULE__, [repo, client, opts], name: :phx_sandbox_session_owner)
+    |> IO.inspect(label: "sandbox_session.ex - start_link - GenServer.start_link(__MODULE__, [repo, client, opts])")
   end
 
   def init([repo, client, opts]) do

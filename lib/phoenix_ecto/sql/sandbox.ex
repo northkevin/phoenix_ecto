@@ -115,6 +115,7 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
     case extract_metadata(conn, opts.header) do
       %{owner: owner} ->
         :ok = stop(owner)
+        |> IO.inspect(label: "sandbox.ex - call(DELETE)")
 
         conn
         |> put_resp_content_type("text/plain")
