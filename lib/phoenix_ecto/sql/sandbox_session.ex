@@ -38,6 +38,8 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
   end
 
   defp checkout_connection(sandbox, repo, client) do
+    {sandbox, repo, client}
+    |> IO.inspect(label: "checkout_connection - #{inspect self()}")
     sandbox.checkout(repo, client: client)
   end
 end
