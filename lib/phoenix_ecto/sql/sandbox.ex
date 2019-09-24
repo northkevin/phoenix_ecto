@@ -107,6 +107,23 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
 
     Supervisor.which_children(Phoenix.Ecto.SQL.SandboxSupervisor)
     |> IO.inspect(label: "I'm curious what children exist for SandboxSupervisor in the POST method: ")
+
+    case length(Supervisor.which_children(Phoenix.Ecto.SQL.SandboxSupervisor)) do
+      0 ->
+        {:ok, _owner, metadata} = start_child(repo, session_opts)
+
+        conn
+        |> put_resp_content_type("text/plain")
+        |> send_resp(200, encode_metadata(metadata))
+        |> halt()
+      _ ->
+        msg = "Session has already been checked out, please stop it before checking a new one."
+        conn
+        |> put_resp_content_type("text/plain")
+        |> send_resp(200, msg)
+        |> halt()
+    end
+
     {:ok, _owner, metadata} = start_child(repo, session_opts)
 
     conn
