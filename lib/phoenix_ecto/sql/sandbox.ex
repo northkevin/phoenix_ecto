@@ -67,7 +67,6 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
     case Supervisor.start_child(SandboxSupervisor, [repo, self(), opts]) do
       {:ok, owner} ->
         metadata = metadata_for(repo, owner)
-        :this_is_the_sql_sandbox_owner = owner
         {:ok, owner, metadata}
 
       {:error, reason} ->
@@ -104,9 +103,10 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
 
   def call(%Conn{method: "POST", path_info: path} = conn, %{path: path} = opts) do
     %{repo: repo, session_opts: session_opts} = opts
-    |> IO.insepct(label: "I'm curious what 'opts' are in the POST method: ")
+    |> IO.inspect(label: "I'm curious what 'opts' are in the POST method: ")
 
-    shared_checked_out_connection_owner = Process.whereis()
+    Supervisor.which_children(Phoenix.Ecto.SQL.SandboxSupervisor)
+    |> IO.inspect(label: "I'm curious what children exist for SandboxSupervisor in the POST method: ")
     {:ok, _owner, metadata} = start_child(repo, session_opts)
 
     conn
