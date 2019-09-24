@@ -123,13 +123,6 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
         |> send_resp(200, msg)
         |> halt()
     end
-
-    {:ok, _owner, metadata} = start_child(repo, session_opts)
-
-    conn
-    |> put_resp_content_type("text/plain")
-    |> send_resp(200, encode_metadata(metadata))
-    |> halt()
   end
   def call(%Conn{method: "DELETE", path_info: path} = conn, %{path: path} = opts) do
     case extract_metadata(conn, opts.header) do
