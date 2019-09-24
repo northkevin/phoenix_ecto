@@ -18,6 +18,12 @@ defmodule PhoenixEcto.SQL.SandboxTest do
     def allow(repo, owner, _allowed) do
       send owner, {:allowed, repo}
     end
+
+    def mode(repo, mode)
+      when is_atom(repo) and mode in [:auto, :manual]
+      when is_atom(repo) and elem(mode, 0) == :shared and is_pid(elem(mode, 1)) do
+        :ok
+    end
   end
 
   defp call_plug_with_checkout(conn, opts \\ []) do

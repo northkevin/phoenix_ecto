@@ -15,6 +15,9 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
     mode = opts[:mode] || @mode
     # mode = opts[:mode] || @mode
 
+    opts
+    |> IO.inspect(label: "sandbox_session.ex - init - opts")
+
     case mode do
       :shared ->
         :ok = checkout_connection_shared(sandbox, repo, client)

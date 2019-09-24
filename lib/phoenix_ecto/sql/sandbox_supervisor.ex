@@ -10,5 +10,6 @@ defmodule Phoenix.Ecto.SQL.SandboxSupervisor do
     supervise([
       worker(Phoenix.Ecto.SQL.SandboxSession, [], restart: :temporary)
     ], strategy: :simple_one_for_one)
+    |> IO.inspect(label: "sandbox_supervisor.ex - init(_) - supervise([])")
   end
 end

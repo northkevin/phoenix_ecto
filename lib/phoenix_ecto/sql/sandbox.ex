@@ -87,7 +87,7 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
   end
 
   def init(opts \\ []) do
-    session_opts = Keyword.take(opts, [:sandbox, :timeout])
+    session_opts = Keyword.take(opts, [:sandbox, :timeout, :mode])
 
     %{
       header: Keyword.get(opts, :header, "user-agent"),
