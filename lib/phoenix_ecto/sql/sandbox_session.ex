@@ -6,8 +6,17 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
   @mode :auto
 
   def start_link(repo, client, opts) do
-    GenServer.start_link(__MODULE__, [repo, client, opts], name: :phx_sandbox_session_owner)
-    |> IO.inspect(label: "sandbox_session.ex - start_link - GenServer.start_link(__MODULE__, [repo, client, opts])")
+    mode = opts[:mode] || @mode
+    case mode do
+      :shared ->
+        owner_process = Process.whereis(:phx_sandbox_session_owner) #nil if Process doesn't exist
+        unless owner_process && Process.alive?(owner_process) do
+          {:ok, _pid} = GenServer.start_link(__MODULE__, [repo, client, opts], name: :phx_sandbox_session_owner)
+          |> IO.inspect(label: "sandbox_session.ex - start_link - GenServer.start_link(__MODULE__, [repo, client, opts])")
+        end
+      _ ->
+        GenServer.start_link(__MODULE__, [repo, client, opts])
+      end
   end
 
   def init([repo, client, opts]) do
@@ -22,7 +31,7 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
     case mode do
       :shared ->
         :ok = checkout_connection_shared(sandbox, repo, client)
-        |> IO.inspect(label: "mode: shared")
+        |> IO.inspect(label: "mode: shared - checkout")
       :auto ->
         :ok = checkout_connection(sandbox, repo, client)
         |> IO.inspect(label: "mode: auto")
