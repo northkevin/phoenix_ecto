@@ -1,5 +1,6 @@
 defmodule Phoenix.Ecto.SQL.SandboxSupervisor do
   @moduledoc false
+  @name DAKING_OF_POOL
   use Supervisor
 
   def start_link do
@@ -8,7 +9,7 @@ defmodule Phoenix.Ecto.SQL.SandboxSupervisor do
 
   def init(_) do
     supervise([
-      worker(Phoenix.Ecto.SQL.SandboxSession, [], restart: :temporary)
+      worker(Phoenix.Ecto.SQL.SandboxSession, [], [name: @name, restart: :temporary])
     ], strategy: :simple_one_for_one)
   end
 end
