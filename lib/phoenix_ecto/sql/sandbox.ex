@@ -145,6 +145,7 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
     _result =
       conn
       |> extract_metadata(header)
+      |> IO.inspect(label: "extract_metadata for #{conn.method} #{conn.request_path}")
       |> allow_sandbox_access(sandbox)
       |> IO.inspect(label: "allow conn for #{conn.method} #{conn.request_path}")
 
