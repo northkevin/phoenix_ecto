@@ -103,7 +103,6 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
 
   def call(%Conn{method: "POST", path_info: path} = conn, %{path: path} = opts) do
     %{repo: repo, session_opts: session_opts} = opts
-    |> IO.inspect(label: "I'm curious what 'opts' are in the POST method: ")
 
     Supervisor.which_children(Phoenix.Ecto.SQL.SandboxSupervisor)
     |> IO.inspect(label: "I'm curious what children exist for SandboxSupervisor in the POST method: ")
