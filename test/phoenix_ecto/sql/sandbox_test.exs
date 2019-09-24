@@ -18,6 +18,10 @@ defmodule PhoenixEcto.SQL.SandboxTest do
     def allow(repo, owner, _allowed) do
       send owner, {:allowed, repo}
     end
+
+    def mode(_repo, _opts) do
+      :ok
+    end
   end
 
   defp call_plug_with_checkout(conn, opts \\ []) do
