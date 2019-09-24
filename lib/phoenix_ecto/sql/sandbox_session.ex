@@ -13,6 +13,7 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
     sandbox = opts[:sandbox] || Ecto.Adapters.SQL.Sandbox
 
     :ok = checkout_connection(sandbox, repo, client)
+    :ok = set_shared_mode(sandbox, repo, client)
     Process.send_after(self(), :timeout, timeout)
 
     {:ok, %{repo: repo, client: client, sandbox: sandbox}}
