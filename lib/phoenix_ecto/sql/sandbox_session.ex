@@ -37,7 +37,6 @@ defmodule Phoenix.Ecto.SQL.SandboxSession do
 
   defp checkin_connection(sandbox, repo, client) do
     sandbox.checkin(repo, client: client)
-    sandbox.mode(repo, )
   end
 
   defp checkout_connection(sandbox, repo, client) do
