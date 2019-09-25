@@ -123,26 +123,37 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
         |> halt()
     end
   end
+
+  # def call(%Conn{method: "DELETE", path_info: path} = conn, %{path: path} = opts) do
+  #   case extract_metadata(conn, opts.header) do
+  #     %{owner: owner} ->
+  #       :ok = stop(owner)
+
+  #       conn
+  #       |> put_resp_content_type("text/plain")
+  #       |> send_resp(200, "")
+  #       |> halt()
+
+  #     %{} ->
+  #       conn
+  #       |> send_resp(410, "")
+  #       |> halt()
+  #   end
+  # end
+
   def call(%Conn{method: "DELETE", path_info: path} = conn, %{path: path} = opts) do
     case active_sandbox_sessions() do
-      [{_id, child, _type, _modules}] ->
-        child
-        |> IO.inspect(label: "call - DELETE - search_for_sandbox_session - found owner")
-      {} ->
-        IO.puts("call - DELETE - search_for_sandbox_session - no owner found.")
-    end
-    case extract_metadata(conn, opts.header) do
-      %{owner: owner} ->
+      [{_id, owner, _type, _modules}] ->
         :ok = stop(owner)
 
         conn
         |> put_resp_content_type("text/plain")
-        |> send_resp(200, "")
+        |> send_resp(200, "#{inspect owner} was successfully deleted.")
         |> halt()
 
-      %{} ->
+      _ ->
         conn
-        |> send_resp(410, "")
+        |> send_resp(410, "No active sandbox sessions were found.")
         |> halt()
     end
   end
