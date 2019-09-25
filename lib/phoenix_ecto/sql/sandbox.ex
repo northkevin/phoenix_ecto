@@ -104,9 +104,6 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
   def call(%Conn{method: "POST", path_info: path} = conn, %{path: path} = opts) do
     %{repo: repo, session_opts: session_opts} = opts
 
-    Supervisor.which_children(Phoenix.Ecto.SQL.SandboxSupervisor)
-    |> IO.inspect(label: "I'm curious what children exist for SandboxSupervisor in the POST method: ")
-
     case length(active_sandbox_sessions()) do
       0 ->
         {:ok, _owner, metadata} = start_child(repo, session_opts)
@@ -124,24 +121,7 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
     end
   end
 
-  # def call(%Conn{method: "DELETE", path_info: path} = conn, %{path: path} = opts) do
-  #   case extract_metadata(conn, opts.header) do
-  #     %{owner: owner} ->
-  #       :ok = stop(owner)
-
-  #       conn
-  #       |> put_resp_content_type("text/plain")
-  #       |> send_resp(200, "")
-  #       |> halt()
-
-  #     %{} ->
-  #       conn
-  #       |> send_resp(410, "")
-  #       |> halt()
-  #   end
-  # end
-
-  def call(%Conn{method: "DELETE", path_info: path} = conn, %{path: path} = opts) do
+  def call(%Conn{method: "DELETE", path_info: path} = conn, %{path: path} = _opts) do
     case active_sandbox_sessions() do
       [{_id, owner, _type, _modules}] ->
         :ok = stop(owner)
@@ -171,6 +151,7 @@ defmodule Phoenix.Ecto.SQL.Sandbox do
 
   defp active_sandbox_sessions() do
     Supervisor.which_children(Phoenix.Ecto.SQL.SandboxSupervisor)
+    |> IO.inspect(label: "sandbox.ex - active_sandbox_sessions:")
   end
 
   defp extract_metadata(%Conn{} = conn, header) do
